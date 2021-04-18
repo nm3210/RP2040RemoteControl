@@ -2,7 +2,7 @@
 #   for use in the Sparkfun Pro Micro RP2040 board
 #
 # Default transmitter settings:
-#   power level: -12 dB
+#   power level: 0 dB (maximum)
 #   transmit address: b"1Node"
 #   receive address:  b"2Node"
 # 
@@ -30,7 +30,7 @@ nrf = RF24(spi, csn, ce)
 
 # Configure settings
 irq.switch_to_input()  # make sure its an input object
-nrf.pa_level = -12 # low for close-proximity testing
+nrf.pa_level = 0 # maximum
 
 # Select tx/rx addresses
 txAddress = b"1Node" # transmit module tx pipe = '1Node'
