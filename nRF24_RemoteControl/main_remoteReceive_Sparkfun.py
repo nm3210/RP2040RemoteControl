@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: April 17th, 2021
+# Last Modified: April 18th, 2021
 
 # Import modules
 import board, digitalio, struct, time, random # circuitpython built-ins
@@ -44,8 +44,8 @@ rxAddress = b"1Node" # receive module rx pipe = '1Node'
 nrf.open_tx_pipe(txAddress)
 nrf.open_rx_pipe(1, rxAddress)
 
-# Set state to enable receive mode
-nrf.listen = True
+# Set state to conserve power until needed
+nrf.listen = False
 print("Finished initializing nRF24 module")
 
 
@@ -57,8 +57,12 @@ def unpackPayload(data):
     return struct.unpack("<f",data)
 
 def receivePayload():
+    nrf.listen = True # enable listen processing (high power usage)
+    time.sleep(0.01) # allow listening on the radio for a while
+    nrf.listen = False # disable listen processing (back to nominal power)
+    
     if not nrf.available():
-        return False
+        return None
     
     # grab information about the received payload
     payload_size, pipe_number = (nrf.any(), nrf.pipe)
@@ -78,7 +82,7 @@ def receivePayload():
 
 ###
 # Main LOOP
-print("Starting main loop...")
+print("Starting main loop for Remote Control - Receive...")
 while True:
     # Send and check payload
     payloadContents = receivePayload()

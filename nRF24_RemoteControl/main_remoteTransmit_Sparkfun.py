@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: April 17th, 2021
+# Last Modified: April 18th, 2021
 
 # Import modules
 import board, digitalio, struct, time, random # circuitpython built-ins
@@ -70,20 +70,18 @@ def sendPayload():
     
     # Configure the module to transmit
     nrf.power = True
-    time.sleep(0.025)
     nrf.listen = False
-    time.sleep(0.025)
     
     # Attempt to send the payload
-    print(f'Attempting to send payload \'{payload}\'')
+    print(f'Attempting to transmit payload \'{payload}\'')
     numRetries = 4;
     gotAckBack = nrf.send(packPayload(payload), force_retry=numRetries)
     
     # Check whether the send was 'successful' (got an ack back)
     if gotAckBack == True:
-        print(f'Succesfully sent payload \'{payload}\' (received ack back)')
+        print(f'  Succesfully transmitted payload \'{payload}\' (received ack back)')
     else:
-        print(f'No ack was received back for payload \'{payload}\'')
+        print(f'  No ack was received back for payload \'{payload}\'')
     
     # Disable the module to hopefully conserve power
     nrf.power = False
@@ -94,7 +92,7 @@ def sendPayload():
 
 ###
 # Main LOOP
-print("Starting main loop...")
+print("Starting main loop for Remote Control - Transmit...")
 while True:
     # Check for changes to enable transmission
     if not anyChanges():
@@ -104,5 +102,5 @@ while True:
     sendPayload()
 
     # Wait
-    time.sleep(1.0)
+    time.sleep(0.25)
 
