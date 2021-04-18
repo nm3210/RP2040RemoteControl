@@ -83,31 +83,6 @@ while True:
     # Send and check payload
     payloadContents = receivePayload()
     time.sleep(0.10)
-        
-
-def slave(timeout=6):
-    """Polls the radio and prints the received value. This method expires
-    after 6 seconds of no received transmission"""
-    nrf.listen = True  # put radio into RX mode and power up
-
-    start = time.monotonic()
-    while (time.monotonic() - start) < timeout:
-        if nrf.available():
-            # grab information about the received payload
-            payload_size, pipe_number = (nrf.any(), nrf.pipe)
-            # fetch 1 payload from RX FIFO
-            buffer = nrf.read()  # also clears nrf.irq_dr status flag
-            # expecting a little endian float, thus the format string "<f"
-            # buffer[:4] truncates padded 0s if dynamic payloads are disabled
-            payload[0] = struct.unpack("<f", buffer[:4])[0]
-            # print details about the received packet
-            print(
-                "Received {} bytes on pipe {}: {}".format(
-                    payload_size, pipe_number, payload[0]
-                )
-            )
-            start = time.monotonic()
-
-    # recommended behavior is to keep in TX mode while idle
-    nrf.listen = False  # put the nRF24L01 is in TX mode
-
+    
+    
+    
