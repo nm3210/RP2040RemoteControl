@@ -73,6 +73,9 @@ listFaceIdx = [0] * numAvgValues
 
 
 ### Other things
+# Setup some storage vars
+lastFace = 0
+
 # Configure timers
 timeCheck_faceIdx = time.monotonic()
 updateTime_faceIdx = 0.01 # seconds
@@ -170,10 +173,16 @@ def getSensorAccel():
     return x, y, z
 
 def anyChanges():
+    global lastFace
+    currentFace = getSmoothedFaceIdx()
+    if currentFace != 0 and currentFace != lastFace:
+        lastFace = currentFace
+        return True
     return False
 
 def getPayload():
-    return getSmoothedFaceIdx()
+    global lastFace
+    return lastFace
 
 def packPayload(data):
     return struct.pack("<f",data)
