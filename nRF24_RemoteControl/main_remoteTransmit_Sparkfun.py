@@ -65,11 +65,23 @@ sensor.cycle = True # only periodically update sensor (saves power!)
 print("Finished initializing mpu6050")
 
 # Setup calibrated accel values
-numAvgValues = 15
+numAvgValues = 10
 listAccelX = [None] * numAvgValues
 listAccelY = [None] * numAvgValues
 listAccelZ = [None] * numAvgValues
 listFaceIdx = [0] * numAvgValues
+
+
+### Other things
+# Configure timers
+timeCheck_faceIdx = time.monotonic()
+updateTime_faceIdx = 0.01 # seconds
+
+timeCheck_changes = time.monotonic()
+updateTime_changes = 0.1 # seconds
+
+timeCheck_autosend = time.monotonic()
+updateTime_autosend = 1.0 # always send an update every second
 
 
 ### Private functions
@@ -138,15 +150,14 @@ def updateAccelList():
     listAccelZ.append(z)
 
 def getSmoothedFaceIdx():
-    updateFaceIdx()
     if not all(ele == listFaceIdx[0] for ele in listFaceIdx):
-        return 0 # ALL elements need to be identical to return a valid face
+        return 0 # ALL elements need to be identical to return a valid value
     return listFaceIdx[0]
 
 def updateFaceIdx():
     _faceIdx = getDownwardFaceIndex()
-    listFaceIdx.pop(0) # ignore outgoing value
-    listFaceIdx.append(_faceIdx)
+    listFaceIdx.pop(0) # remove an entry (ignore outgoing value)
+    listFaceIdx.append(_faceIdx) # add the new index
 
 def preallocateAccelList():
     # Check if there are any none's to replace
@@ -159,7 +170,7 @@ def getSensorAccel():
     return x, y, z
 
 def anyChanges():
-    return True
+    return False
 
 def getPayload():
     return getSmoothedFaceIdx()
@@ -189,7 +200,7 @@ def sendPayload():
     else:
         print(f'  No ack was received back for payload \'{payload}\'')
     
-    # Disable the module to hopefully conserve power
+    # Disable the module to conserve power
     nrf.power = False
     
     # Return value of whether an ack was received back
@@ -200,13 +211,20 @@ def sendPayload():
 # Main LOOP
 print("Starting main loop for Remote Control - Transmit...")
 while True:
-    # Check for changes to enable transmission
-    if not anyChanges():
-        continue
+    ### Check timers
+    # Update FaceIdx
+    if abs(time.monotonic() - timeCheck_faceIdx) > updateTime_faceIdx:
+        timeCheck_faceIdx = time.monotonic() # reset timer
+        updateFaceIdx()
     
-    # Send payload
-    sendPayload()
-
-    # Wait
-    time.sleep(0.25)
-
+    # Check for any face index changes
+    detectedChanges = False
+    if abs(time.monotonic() - timeCheck_changes) > updateTime_changes:
+        timeCheck_changes = time.monotonic() # reset timer
+        detectedChanges = anyChanges()
+    
+    # Send an update if any changes or a timeout has been reached
+    if lastFace != 0 and (detectedChanges or abs(time.monotonic() - timeCheck_autosend) > updateTime_autosend):
+        timeCheck_autosend = time.monotonic() # reset timer
+        sendPayload()
+    
