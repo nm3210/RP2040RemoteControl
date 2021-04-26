@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: April 18th, 2021
+# Last Modified: April 22nd, 2021
 
 # Import modules
 import board, bitbangio, digitalio, struct, time, random # circuitpython built-ins
@@ -60,12 +60,12 @@ i2c = bitbangio.I2C(softScl, softSdl) # software i2c
 
 # Initialize MPU6050 object
 sensor = adafruit_mpu6050.MPU6050(i2c)
-sensor.cycle_rate = adafruit_mpu6050.Rate.CYCLE_5_HZ # update cycle rate
+sensor.cycle_rate = adafruit_mpu6050.Rate.CYCLE_40_HZ # update cycle rate
 sensor.cycle = True # only periodically update sensor (saves power!)
 print("Finished initializing mpu6050")
 
 # Setup calibrated accel values
-numAvgValues = 10
+numAvgValues = 5
 listAccelX = [None] * numAvgValues
 listAccelY = [None] * numAvgValues
 listAccelZ = [None] * numAvgValues
@@ -81,10 +81,10 @@ timeCheck_faceIdx = time.monotonic()
 updateTime_faceIdx = 0.01 # seconds
 
 timeCheck_changes = time.monotonic()
-updateTime_changes = 0.1 # seconds
+updateTime_changes = 0.05 # seconds
 
 timeCheck_autosend = time.monotonic()
-updateTime_autosend = 1.0 # always send an update every second
+updateTime_autosend = 1.0 # always send an update every once in a while
 
 
 ### Private functions
@@ -200,7 +200,7 @@ def sendPayload():
     
     # Attempt to send the payload
     print(f'Attempting to transmit payload \'{payload}\'')
-    numRetries = 4;
+    numRetries = 8;
     gotAckBack = nrf.send(packPayload(payload), force_retry=numRetries)
     
     # Check whether the send was 'successful' (got an ack back)
