@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: April 18th, 2021
+# Last Modified: April 22nd, 2021
 
 # Import modules
 import board, digitalio, struct, time, random # circuitpython built-ins
@@ -44,9 +44,9 @@ print("Finished initializing nRF24 module")
 
 ### Initialize neopixel output
 ledPin = board.NEOPIXEL
-colorOrder = neopixel.GRB # for the Sparkfun Pro Micro RP2040's WS2812
-pixel = neopixel.NeoPixel(ledPin, 1, pixel_order=colorOrder)
-pixel[0] = (0,0,0) # turn off on startup
+pixelMain = neopixel.NeoPixel(ledPin, 1, pixel_order=neopixel.GRB)
+pixelMain[0] = (0,0,0) # turn off on startup
+
 print("Finished initializing neopixel")
 
 # Setup colors and brightness settings
@@ -60,6 +60,15 @@ colorMagenta = (255,0,255)
 brightness = 0.1 # from 0 to 1
 
 
+### Other things
+# Setup some storage vars
+lastValid = 0
+
+# Configure timers
+timeCheck_receive = time.monotonic()
+updateTime_receive = 0.01 # seconds, how often to listen
+updateDur_receive = 0.01 # seconds, how long to listen
+
 ### Private functions
 def adjColor(_color, _brightness=1.0):
     return [floor(x * _brightness) for x in _color]
@@ -70,9 +79,10 @@ def packPayload(data):
 def unpackPayload(data):
     return struct.unpack("<f",data)
 
-def receivePayload():
+def receivePayload(debugPrint=False):
+    global updateDur_receive
     nrf.listen = True # enable listen processing (high power usage)
-    time.sleep(0.01) # allow listening on the radio for a while
+    time.sleep(updateDur_receive) # allow listening on the radio for a while
     nrf.listen = False # disable listen processing (back to nominal power)
     
     if not nrf.available():
@@ -87,11 +97,9 @@ def receivePayload():
     payload = unpackPayload(buffer)
     
     # print details about the received packet
-    print(
-        "Received {} bytes on pipe {}: {}".format(
-            payload_size, pipe_number, payload[0]
-        )
-    )
+    if debugPrint == True:
+        print("Received {} bytes on pipe {}: {}".format(
+            payload_size, pipe_number, payload[0]))
     return payload[0]
 
 
@@ -99,24 +107,40 @@ def receivePayload():
 # Main LOOP
 print("Starting main loop for Remote Control - Receive...")
 while True:
-    # Send and check payload
-    payloadContents = receivePayload()
+    ### Check timers
+    # Listen to the RF interface for any incoming messages
+    detectedChanges = False
+    if abs(time.monotonic() - timeCheck_receive) > updateTime_receive:
+        timeCheck_receive = time.monotonic() # reset timer
+        
+        # Check if the payload is valid (not none)
+        payloadContents = receivePayload(debugPrint=True)
+        if payloadContents is not None:
+            # Check if the payload has changed from previous
+            if lastValid != payloadContents:
+                detectedChanges = True
+            
+            # Store the payload as the last valid content received
+            lastValid = payloadContents
     
-    if payloadContents is not None:
-        faceIdx = payloadContents
+    
+    ### Update
+    if detectedChanges == True:
+        faceIdx = lastValid
         # Change color!
         if faceIdx == 0: # invalid
-            pixel[0] = adjColor(colorOff, brightness)
+            pixelMain[0] = adjColor(colorOff, brightness)
         elif faceIdx == 1:
-            pixel[0] = adjColor(colorRed, brightness)
+            pixelMain[0] = adjColor(colorRed, brightness)
         elif faceIdx == 2:
-            pixel[0] = adjColor(colorYellow, brightness)
+            pixelMain[0] = adjColor(colorYellow, brightness)
         elif faceIdx == 3:
-            pixel[0] = adjColor(colorGreen, brightness)
+            pixelMain[0] = adjColor(colorGreen, brightness)
         elif faceIdx == 4:
-            pixel[0] = adjColor(colorCyan, brightness)
+            pixelMain[0] = adjColor(colorCyan, brightness)
         elif faceIdx == 5:
-            pixel[0] = adjColor(colorBlue, brightness)
+            pixelMain[0] = adjColor(colorBlue, brightness)
         elif faceIdx == 6:
-            pixel[0] = adjColor(colorMagenta, brightness)
+            pixelMain[0] = adjColor(colorMagenta, brightness)
+    
     
