@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: June 12th, 2021
+# Last Modified: June 13th, 2021
 
 # Import modules
 import board, bitbangio, digitalio, struct, time, random # circuitpython built-ins
@@ -75,13 +75,13 @@ listFaceIdx = [0] * numAvgValues
 lastFace = 0
 
 # Configure timers
-timeCheck_faceIdx = time.monotonic()
+timeCheck_faceIdx = time.monotonic_ns()
 updateTime_faceIdx = 0.025 # seconds
 
-timeCheck_changes = time.monotonic()
+timeCheck_changes = time.monotonic_ns()
 updateTime_changes = 0.01 # seconds
 
-timeCheck_autosend = time.monotonic()
+timeCheck_autosend = time.monotonic_ns()
 updateTime_autosend = 0.5 # always send an update every once in a while
 
 
@@ -188,18 +188,18 @@ print("Starting main loop for Remote Control - Transmit...")
 while True:
     ### Check timers
     # Update FaceIdx
-    if abs(time.monotonic() - timeCheck_faceIdx) > updateTime_faceIdx:
-        timeCheck_faceIdx = time.monotonic() # reset timer
+    if abs(time.monotonic_ns() - timeCheck_faceIdx) > updateTime_faceIdx*1e9:
+        timeCheck_faceIdx = time.monotonic_ns() # reset timer
         updateFaceIdx()
     
     # Check for any face index changes
     detectedChanges = False
-    if abs(time.monotonic() - timeCheck_changes) > updateTime_changes:
-        timeCheck_changes = time.monotonic() # reset timer
+    if abs(time.monotonic_ns() - timeCheck_changes) > updateTime_changes*1e9:
+        timeCheck_changes = time.monotonic_ns() # reset timer
         detectedChanges = anyChanges()
     
     # Send an update if any changes or a timeout has been reached
-    if lastFace != 0 and (detectedChanges or abs(time.monotonic() - timeCheck_autosend) > updateTime_autosend):
-        timeCheck_autosend = time.monotonic() # reset timer
+    if lastFace != 0 and (detectedChanges or abs(time.monotonic_ns() - timeCheck_autosend) > updateTime_autosend*1e9):
+        timeCheck_autosend = time.monotonic_ns() # reset timer
         sendPayload(nrf, getPayload())
     

@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: June 12th, 2021
+# Last Modified: June 13th, 2021
 
 # Import modules
 import board, digitalio, struct, time, random # circuitpython built-ins
@@ -67,7 +67,7 @@ brightness = 0.1 # from 0 to 1
 lastValid = 0
 
 # Configure timers
-timeCheck_receive = time.monotonic()
+timeCheck_receive = time.monotonic_ns()
 updateTime_receive = 0.01 # seconds, how often to listen
 updateDur_receive = 0.011 # seconds, how long to listen
 
@@ -83,8 +83,8 @@ while True:
     ### Check timers
     # Listen to the RF interface for any incoming messages
     detectedChanges = False
-    if abs(time.monotonic() - timeCheck_receive) > updateTime_receive:
-        timeCheck_receive = time.monotonic() # reset timer
+    if abs(time.monotonic_ns() - timeCheck_receive) > updateTime_receive*1e9:
+        timeCheck_receive = time.monotonic_ns() # reset timer
         
         # Check if the payload is valid (not none)
         payloadContents = receivePayload(nrf, debugPrint=True)
