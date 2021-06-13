@@ -87,7 +87,7 @@ while True:
         timeCheck_receive = time.monotonic_ns() # reset timer
         
         # Check if the payload is valid (not none)
-        payloadContents = receivePayload(nrf, debugPrint=True)
+        payloadContents = receivePayload(nrf, debugPrint=False)
         if payloadContents is not None:
             try: # don't crash if the payload can't be converted correctly
                 # Check if the payload has changed from previous

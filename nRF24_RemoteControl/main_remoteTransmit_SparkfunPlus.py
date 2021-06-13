@@ -201,5 +201,5 @@ while True:
     # Send an update if any changes or a timeout has been reached
     if lastFace != 0 and (detectedChanges or abs(time.monotonic_ns() - timeCheck_autosend) > updateTime_autosend*1e9):
         timeCheck_autosend = time.monotonic_ns() # reset timer
-        sendPayload(nrf, getPayload())
+        sendPayload(nrf, getPayload(), debugPrint=False)
     
