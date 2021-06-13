@@ -19,10 +19,10 @@ print("Finished importing modules")
 
 ### Initialize nRF24L01
 # Configure pinouts
-ce = digitalio.DigitalInOut(board.D5)
+ce = digitalio.DigitalInOut(board.D26)
 csn = digitalio.DigitalInOut(board.D21)
 spi = board.SPI() # init spi bus w/ pins D[20,22,23]
-irq = digitalio.DigitalInOut(board.D6) # optional IRQ pin to listen to interupts
+irq = digitalio.DigitalInOut(board.D27) # optional IRQ pin to listen to interupts
 
 # Initialize object
 nrf = RF24(spi, csn, ce)
