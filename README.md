@@ -14,6 +14,8 @@ These scripts are to be used within the CircuitPython framework, mostly using th
 
     [![front](https://644db4de3505c40a0444-327723bce298e3ff5813fb42baeefbaa.ssl.cf1.rackcdn.com/7278f274c43d13a2ca392a091e58a9ee.png) ![back](https://644db4de3505c40a0444-327723bce298e3ff5813fb42baeefbaa.ssl.cf1.rackcdn.com/6ac03391f8f8bb451b62ce8364d421eb.png)](https://oshpark.com/shared_projects/c06FLb7A)
 
+    The transmit module, however, is planned to be a [Sparkfun Thing Plus RP2040](https://www.sparkfun.com/products/17745) so that a battery can be used (the Thing Plus features a battery input and a handful of battery related circuits onboard).
+
 ## Testing & Prototyping Projects
 
 * [MPU6050_Testing](MPU6050_Testing): Handful of scripts to test the MPU6050 accelerometer sensor
