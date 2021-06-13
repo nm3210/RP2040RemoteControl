@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: April 22nd, 2021
+# Last Modified: June 13th, 2021
 
 # Import modules
 import board, bitbangio, digitalio, struct, time, random # circuitpython built-ins
@@ -16,6 +16,8 @@ from math import atan2, acos, sqrt, pi # necessary math calls
 import adafruit_mpu6050 # also requires adafruit_register
 import neopixel # also requires adafruit_pypixelbuf
 from circuitpython_nrf24l01.rf24 import RF24
+from lib.ColorDescriptors.ColorDescriptors import *
+from lib.EasyStreamNrf24.EasyStreamNrf24 import sendPayload
 print("Finished importing modules")
 
 ### Initialize nRF24L01
@@ -46,9 +48,8 @@ print("Finished initializing nRF24 module")
 
 ### Initialize neopixel output
 ledPin = board.NEOPIXEL
-colorOrder = neopixel.GRB # for the Sparkfun Pro Micro RP2040's WS2812
-pixel = neopixel.NeoPixel(ledPin, 1, pixel_order=colorOrder)
-pixel[0] = (0,0,0) # turn off on startup
+pixelMain = neopixel.NeoPixel(ledPin, 1, pixel_order=neopixel.GRB)
+pixelMain.fill((0,0,0)) # turn off on startup
 print("Finished initializing neopixel")
 
 
@@ -77,13 +78,13 @@ listFaceIdx = [0] * numAvgValues
 lastFace = 0
 
 # Configure timers
-timeCheck_faceIdx = time.monotonic()
-updateTime_faceIdx = 0.01 # seconds
+timeCheck_faceIdx = time.monotonic_ns()
+updateTime_faceIdx = 1.1/40 # seconds, enough time for the 40 Hz to update
 
-timeCheck_changes = time.monotonic()
-updateTime_changes = 0.05 # seconds
+timeCheck_changes = time.monotonic_ns()
+updateTime_changes = 0.01 # seconds
 
-timeCheck_autosend = time.monotonic()
+timeCheck_autosend = time.monotonic_ns()
 updateTime_autosend = 1.0 # always send an update every once in a while
 
 
@@ -166,7 +167,7 @@ def preallocateAccelList():
     # Check if there are any none's to replace
     while (None in listAccelX or None in listAccelY or None in listAccelY):
         updateAccelList()
-        time.sleep(0.05) # wait a bit
+        time.sleep(1.1/40) # wait for the sensor to update
 
 def getSensorAccel():
     x, y, z = sensor.acceleration
@@ -182,39 +183,7 @@ def anyChanges():
 
 def getPayload():
     global lastFace
-    return lastFace
-
-def packPayload(data):
-    return struct.pack("<f",data)
-    
-def unpackPayload(data):
-    return struct.unpack("<f",data)
-
-def sendPayload():
-    # Get the current payload
-    payload = getPayload()
-    
-    # Configure the module to transmit
-    nrf.power = True
-    nrf.listen = False
-    
-    # Attempt to send the payload
-    print(f'Attempting to transmit payload \'{payload}\'')
-    numRetries = 8;
-    gotAckBack = nrf.send(packPayload(payload), force_retry=numRetries)
-    
-    # Check whether the send was 'successful' (got an ack back)
-    if gotAckBack == True:
-        print(f'  Succesfully transmitted payload \'{payload}\' (received ack back)')
-    else:
-        print(f'  No ack was received back for payload \'{payload}\'')
-    
-    # Disable the module to conserve power
-    nrf.power = False
-    
-    # Return value of whether an ack was received back
-    return gotAckBack
-
+    return str(lastFace)
 
 ###
 # Main LOOP
@@ -222,18 +191,18 @@ print("Starting main loop for Remote Control - Transmit...")
 while True:
     ### Check timers
     # Update FaceIdx
-    if abs(time.monotonic() - timeCheck_faceIdx) > updateTime_faceIdx:
-        timeCheck_faceIdx = time.monotonic() # reset timer
+    if abs(time.monotonic_ns() - timeCheck_faceIdx) > updateTime_faceIdx*1e9:
+        timeCheck_faceIdx = time.monotonic_ns() # reset timer
         updateFaceIdx()
     
     # Check for any face index changes
     detectedChanges = False
-    if abs(time.monotonic() - timeCheck_changes) > updateTime_changes:
-        timeCheck_changes = time.monotonic() # reset timer
+    if abs(time.monotonic_ns() - timeCheck_changes) > updateTime_changes*1e9:
+        timeCheck_changes = time.monotonic_ns() # reset timer
         detectedChanges = anyChanges()
     
     # Send an update if any changes or a timeout has been reached
-    if lastFace != 0 and (detectedChanges or abs(time.monotonic() - timeCheck_autosend) > updateTime_autosend):
-        timeCheck_autosend = time.monotonic() # reset timer
-        sendPayload()
+    if lastFace != 0 and (detectedChanges or abs(time.monotonic_ns() - timeCheck_autosend) > updateTime_autosend*1e9):
+        timeCheck_autosend = time.monotonic_ns() # reset timer
+        sendPayload(nrf, getPayload(), debugPrint=False)
     
