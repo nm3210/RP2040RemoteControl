@@ -63,7 +63,7 @@ sensor.cycle = True # only periodically update sensor (saves power!)
 print("Finished initializing mpu6050")
 
 # Setup calibrated accel values
-numAvgValues = 4
+numAvgValues = 5
 listAccelX = [None] * numAvgValues
 listAccelY = [None] * numAvgValues
 listAccelZ = [None] * numAvgValues
@@ -76,13 +76,13 @@ lastFace = 0
 
 # Configure timers
 timeCheck_faceIdx = time.monotonic_ns()
-updateTime_faceIdx = 0.025 # seconds
+updateTime_faceIdx = 1.1/40 # seconds, enough time for the 40 Hz to update
 
 timeCheck_changes = time.monotonic_ns()
 updateTime_changes = 0.01 # seconds
 
 timeCheck_autosend = time.monotonic_ns()
-updateTime_autosend = 0.5 # always send an update every once in a while
+updateTime_autosend = 1.0 # always send an update every once in a while
 
 
 ### Private functions
@@ -164,7 +164,7 @@ def preallocateAccelList():
     # Check if there are any none's to replace
     while (None in listAccelX or None in listAccelY or None in listAccelY):
         updateAccelList()
-        time.sleep(0.05) # wait a bit
+        time.sleep(1.1/40) # wait for the sensor to update
 
 def getSensorAccel():
     x, y, z = sensor.acceleration
