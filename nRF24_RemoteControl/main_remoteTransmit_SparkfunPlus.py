@@ -25,13 +25,13 @@ print("Finished importing modules")
 ce = digitalio.DigitalInOut(board.D0)
 csn = digitalio.DigitalInOut(board.D1)
 spi = board.SPI() # init spi bus w/ pins D[2,3,4]
-irq = digitalio.DigitalInOut(board.D6) # optional IRQ pin to listen to interrupts
+# irq = digitalio.DigitalInOut(board.D6) # optional IRQ pin to listen to interrupts
 
 # Initialize object
 nrf = RF24(spi, csn, ce)
 
 # Configure settings
-irq.switch_to_input()  # make sure its an input object
+# irq.switch_to_input()  # make sure its an input object
 nrf.pa_level = 0 # maximum
 
 # Select tx/rx addresses
