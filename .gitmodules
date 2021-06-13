@@ -1,0 +1,6 @@
+[submodule "nRF24_RemoteControl/lib/ColorDescriptors"]
+	path = nRF24_RemoteControl/lib/ColorDescriptors
+	url = git@github.com:nm3210/ColorDescriptors.git
+[submodule "nRF24_RemoteControl/lib/EasyStreamNrf24"]
+	path = nRF24_RemoteControl/lib/EasyStreamNrf24
+	url = git@github.com:nm3210/EasyStreamNrf24.git

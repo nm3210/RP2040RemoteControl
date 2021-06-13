@@ -8,13 +8,15 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: April 22nd, 2021
+# Last Modified: June 12th, 2021
 
 # Import modules
 import board, digitalio, struct, time, random # circuitpython built-ins
 from math import floor # necessary math calls
 import neopixel # also requires adafruit_pypixelbuf
 from circuitpython_nrf24l01.rf24 import RF24
+from lib.ColorDescriptors.ColorDescriptors import *
+from lib.EasyStreamNrf24.EasyStreamNrf24 import receivePayload
 print("Finished importing modules")
 
 ### Initialize nRF24L01
@@ -67,40 +69,11 @@ lastValid = 0
 # Configure timers
 timeCheck_receive = time.monotonic()
 updateTime_receive = 0.01 # seconds, how often to listen
-updateDur_receive = 0.01 # seconds, how long to listen
+updateDur_receive = 0.011 # seconds, how long to listen
 
 ### Private functions
 def adjColor(_color, _brightness=1.0):
     return [floor(x * _brightness) for x in _color]
-    
-def packPayload(data):
-    return struct.pack("<f",data)
-    
-def unpackPayload(data):
-    return struct.unpack("<f",data)
-
-def receivePayload(debugPrint=False):
-    global updateDur_receive
-    nrf.listen = True # enable listen processing (high power usage)
-    time.sleep(updateDur_receive) # allow listening on the radio for a while
-    nrf.listen = False # disable listen processing (back to nominal power)
-    
-    if not nrf.available():
-        return None
-    
-    # grab information about the received payload
-    payload_size, pipe_number = (nrf.any(), nrf.pipe)
-    
-    # fetch 1 payload from RX FIFO
-    buffer = nrf.read()  # also clears nrf.irq_dr status flag
-    
-    payload = unpackPayload(buffer)
-    
-    # print details about the received packet
-    if debugPrint == True:
-        print("Received {} bytes on pipe {}: {}".format(
-            payload_size, pipe_number, payload[0]))
-    return payload[0]
 
 
 ###
@@ -114,16 +87,19 @@ while True:
         timeCheck_receive = time.monotonic() # reset timer
         
         # Check if the payload is valid (not none)
-        payloadContents = receivePayload(debugPrint=True)
+        payloadContents = receivePayload(nrf, debugPrint=True)
         if payloadContents is not None:
-            # Check if the payload has changed from previous
-            if lastValid != payloadContents:
-                detectedChanges = True
-            
-            # Store the payload as the last valid content received
-            lastValid = payloadContents
+            try: # don't crash if the payload can't be converted correctly
+                # Check if the payload has changed from previous
+                if lastValid != float(payloadContents):
+                    detectedChanges = True
+                
+                # Store the payload as the last valid content received
+                lastValid = float(payloadContents)
+            except:
+                pass
     
-    
+
     ### Update
     if detectedChanges == True:
         faceIdx = lastValid

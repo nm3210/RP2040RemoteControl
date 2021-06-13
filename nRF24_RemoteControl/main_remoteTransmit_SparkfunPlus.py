@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: May 14th, 2021
+# Last Modified: June 12th, 2021
 
 # Import modules
 import board, bitbangio, digitalio, struct, time, random # circuitpython built-ins
@@ -16,6 +16,8 @@ from math import atan2, acos, sqrt, pi # necessary math calls
 import adafruit_mpu6050 # also requires adafruit_register
 import neopixel # also requires adafruit_pypixelbuf
 from circuitpython_nrf24l01.rf24 import RF24
+from lib.ColorDescriptors.ColorDescriptors import *
+from lib.EasyStreamNrf24.EasyStreamNrf24 import sendPayload
 print("Finished importing modules")
 
 ### Initialize nRF24L01
@@ -178,36 +180,7 @@ def anyChanges():
 
 def getPayload():
     global lastFace
-    return lastFace
-
-def packPayload(data):
-    return struct.pack("<f",data)
-    
-def unpackPayload(data):
-    return struct.unpack("<f",data)
-
-def sendPayload(payload):
-    # Configure the module to transmit
-    nrf.power = True
-    nrf.listen = False
-    
-    # Attempt to send the payload
-    print(f'Attempting to transmit payload \'{payload}\'')
-    numRetries = 12;
-    gotAckBack = nrf.send(packPayload(payload), force_retry=numRetries)
-    
-    # Check whether the send was 'successful' (got an ack back)
-    if gotAckBack == True:
-        print(f'  Succesfully transmitted payload \'{payload}\' (received ack back)')
-    else:
-        print(f'  No ack was received back for payload \'{payload}\'')
-    
-    # Disable the module to conserve power
-    nrf.power = False
-    
-    # Return value of whether an ack was received back
-    return gotAckBack
-
+    return str(lastFace)
 
 ###
 # Main LOOP
@@ -228,5 +201,5 @@ while True:
     # Send an update if any changes or a timeout has been reached
     if lastFace != 0 and (detectedChanges or abs(time.monotonic() - timeCheck_autosend) > updateTime_autosend):
         timeCheck_autosend = time.monotonic() # reset timer
-        sendPayload(getPayload())
+        sendPayload(nrf, getPayload())
     

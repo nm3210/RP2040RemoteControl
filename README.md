@@ -20,4 +20,8 @@ These scripts are to be used within the CircuitPython framework, mostly using th
 
 * [MPU6050_Testing](MPU6050_Testing): Handful of scripts to test the MPU6050 accelerometer sensor
 
-* [nRF24_Testing](nRF24_Testing): Scripts to test the nRF24L01 transceiver, mostly copied over from https://github.com/2bndy5/CircuitPython_nRF24L01/tree/master/examples after adjusting for the pins I have set up.
+* [nRF24_Testing](nRF24_Testing): Scripts to test the nRF24L01 transceiver, mostly copied over from <https://github.com/2bndy5/CircuitPython_nRF24L01/tree/master/examples> after adjusting for the pins I have set up.
+
+* [ColorDescriptors](https://github.com/nm3210/ColorDescriptors): Easily defined color descriptor words to be passed from one node to another
+
+* [EasyStreamNrf24](https://github.com/nm3210/EasyStreamNrf24): Extends the normal NRF send/receive commands to combine multiple consecutive packets together
