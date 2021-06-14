@@ -106,9 +106,9 @@ def getPlatonicCubeFaceIdx(theta, phi, angleCheck):
         faceIdx = 3
     elif abs(angleDiff(theta, 90)) <= angleCheck and abs(angleDiff(phi, 90)) <= angleCheck: # Side 2
         faceIdx = 4
-    elif abs(angleDiff(phi,  0)) <= angleCheck: # Side 3, no theta check necessary because it's in a singularity
+    elif abs(angleDiff(phi,    0)) <= angleCheck: # Side 3, no theta check necessary because it's in a singularity
         faceIdx = 5
-    elif abs(angleDiff(phi,180)) <= angleCheck: # Side 4, no theta check necessary because it's in a singularity
+    elif abs(angleDiff(phi,  180)) <= angleCheck: # Side 4, no theta check necessary because it's in a singularity
         faceIdx = 6
     else:
         pass
@@ -178,9 +178,27 @@ def anyChanges():
         return True
     return False
 
+def lookupFaceColor(faceVal):
+    if   faceVal == 1:
+        return ColorSolid(hue =   0)
+    elif faceVal == 2:
+        return ColorSolid(hue =  60)
+    elif faceVal == 3:
+        return ColorSolid(hue = 120)
+    elif faceVal == 4:
+        return ColorSolid(hue = 180)
+    elif faceVal == 5:
+        return ColorSolid(hue = 240)
+    elif faceVal == 6:
+        return ColorSolid(hue = 300)
+    else:
+        return '0'
+
 def getPayload():
     global lastFace
-    return str(lastFace)
+    faceColor = lookupFaceColor(lastFace)
+    return faceColor.toString()
+    
 
 ###
 # Main LOOP

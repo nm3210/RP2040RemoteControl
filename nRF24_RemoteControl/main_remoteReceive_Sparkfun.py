@@ -64,7 +64,7 @@ brightness = 0.1 # from 0 to 1
 
 ### Other things
 # Setup some storage vars
-lastValid = 0
+faceColor = ColorSolid(intensity=0)
 
 # Configure timers
 timeCheck_receive = time.monotonic_ns()
@@ -90,33 +90,28 @@ while True:
         payloadContents = receivePayload(nrf, debugPrint=False)
         if payloadContents is not None:
             try: # don't crash if the payload can't be converted correctly
-                # Check if the payload has changed from previous
-                if lastValid != float(payloadContents):
+                # Convert to a color
+                curColor = ColorSolid.parse(payloadContents)
+                if faceColor != curColor:
                     detectedChanges = True
                 
                 # Store the payload as the last valid content received
-                lastValid = float(payloadContents)
+                faceColor = curColor
             except:
-                pass
-    
+                try:
+                    faceIdx = float(payloadContents)
+                    curColor = ColorSolid(hue=((faceIdx-1)*60.0))
+                    if faceColor != curColor:
+                        detectedChanges = True
+                    
+                    # Store the payload as the last valid content received
+                    faceColor = curColor
+                except:
+                    pass
 
     ### Update
     if detectedChanges == True:
-        faceIdx = lastValid
         # Change color!
-        if faceIdx == 0: # invalid
-            pixelMain[0] = adjColor(colorOff, brightness)
-        elif faceIdx == 1:
-            pixelMain[0] = adjColor(colorRed, brightness)
-        elif faceIdx == 2:
-            pixelMain[0] = adjColor(colorYellow, brightness)
-        elif faceIdx == 3:
-            pixelMain[0] = adjColor(colorGreen, brightness)
-        elif faceIdx == 4:
-            pixelMain[0] = adjColor(colorCyan, brightness)
-        elif faceIdx == 5:
-            pixelMain[0] = adjColor(colorBlue, brightness)
-        elif faceIdx == 6:
-            pixelMain[0] = adjColor(colorMagenta, brightness)
+        pixelMain.fill(adjColor((faceColor.red, faceColor.green, faceColor.blue),brightness))
     
     
