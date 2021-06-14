@@ -63,7 +63,7 @@ sensor.cycle = True # only periodically update sensor (saves power!)
 print("Finished initializing mpu6050")
 
 # Setup calibrated accel values
-numAvgValues = 5
+numAvgValues = 7
 listAccelX = [None] * numAvgValues
 listAccelY = [None] * numAvgValues
 listAccelZ = [None] * numAvgValues
