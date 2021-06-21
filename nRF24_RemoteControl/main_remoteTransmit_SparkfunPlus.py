@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: June 13th, 2021
+# Last Modified: June 20th, 2021
 
 # Import modules
 import board, bitbangio, digitalio, struct, time, random # circuitpython built-ins
@@ -178,27 +178,27 @@ def anyChanges():
         return True
     return False
 
-def lookupFaceColor(faceVal):
+def lookupFaceMethod(faceVal):
     if   faceVal == 1:
-        return ColorSolid(hue =   0)
+        return ColorMethod(ModeStationary, ColorRed)
     elif faceVal == 2:
-        return ColorSolid(hue =  60)
+        return ColorMethod(ModeStationary, ColorYellow)
     elif faceVal == 3:
-        return ColorSolid(hue = 120)
+        return ColorMethod(ModeStationary, ColorGreen)
     elif faceVal == 4:
-        return ColorSolid(hue = 180)
+        return ColorMethod(ModeStationary, ColorCyan)
     elif faceVal == 5:
-        return ColorSolid(hue = 240)
+        return ColorMethod(ModeStationary, ColorBlue)
     elif faceVal == 6:
-        return ColorSolid(hue = 300)
+        return ColorMethod(ModeStationary, ColorMagenta)
     else:
-        return '0'
+        return None
 
 def getPayload():
     global lastFace
-    faceColor = lookupFaceColor(lastFace)
-    return faceColor.toString()
-    
+    faceMethod = lookupFaceMethod(lastFace)
+    if faceMethod is None: return None
+    return faceMethod.toString()
 
 ###
 # Main LOOP
@@ -219,5 +219,7 @@ while True:
     # Send an update if any changes or a timeout has been reached
     if lastFace != 0 and (detectedChanges or abs(time.monotonic_ns() - timeCheck_autosend) > updateTime_autosend*1e9):
         timeCheck_autosend = time.monotonic_ns() # reset timer
-        sendPayload(nrf, getPayload(), debugPrint=False)
+        curPayload = getPayload()
+        if curPayload is not None:
+            sendPayload(nrf, getPayload(), debugPrint=False)
     

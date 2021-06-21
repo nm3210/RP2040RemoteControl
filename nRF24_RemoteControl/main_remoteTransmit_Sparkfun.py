@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: June 13th, 2021
+# Last Modified: June 20th, 2021
 
 # Import modules
 import board, bitbangio, digitalio, struct, time, random # circuitpython built-ins
@@ -66,7 +66,7 @@ sensor.cycle = True # only periodically update sensor (saves power!)
 print("Finished initializing mpu6050")
 
 # Setup calibrated accel values
-numAvgValues = 5
+numAvgValues = 7
 listAccelX = [None] * numAvgValues
 listAccelY = [None] * numAvgValues
 listAccelZ = [None] * numAvgValues
@@ -109,9 +109,9 @@ def getPlatonicCubeFaceIdx(theta, phi, angleCheck):
         faceIdx = 3
     elif abs(angleDiff(theta, 90)) <= angleCheck and abs(angleDiff(phi, 90)) <= angleCheck: # Side 2
         faceIdx = 4
-    elif abs(angleDiff(phi,  0)) <= angleCheck: # Side 3, no theta check necessary because it's in a singularity
+    elif abs(angleDiff(phi,    0)) <= angleCheck: # Side 3, no theta check necessary because it's in a singularity
         faceIdx = 5
-    elif abs(angleDiff(phi,180)) <= angleCheck: # Side 4, no theta check necessary because it's in a singularity
+    elif abs(angleDiff(phi,  180)) <= angleCheck: # Side 4, no theta check necessary because it's in a singularity
         faceIdx = 6
     else:
         pass
@@ -181,9 +181,27 @@ def anyChanges():
         return True
     return False
 
+def lookupFaceMethod(faceVal):
+    if   faceVal == 1:
+        return ColorMethod(ModeStationary, ColorRed)
+    elif faceVal == 2:
+        return ColorMethod(ModeStationary, ColorYellow)
+    elif faceVal == 3:
+        return ColorMethod(ModeStationary, ColorGreen)
+    elif faceVal == 4:
+        return ColorMethod(ModeStationary, ColorCyan)
+    elif faceVal == 5:
+        return ColorMethod(ModeStationary, ColorBlue)
+    elif faceVal == 6:
+        return ColorMethod(ModeStationary, ColorMagenta)
+    else:
+        return None
+
 def getPayload():
     global lastFace
-    return str(lastFace)
+    faceMethod = lookupFaceMethod(lastFace)
+    if faceMethod is None: return None
+    return faceMethod.toString()
 
 ###
 # Main LOOP
@@ -204,5 +222,7 @@ while True:
     # Send an update if any changes or a timeout has been reached
     if lastFace != 0 and (detectedChanges or abs(time.monotonic_ns() - timeCheck_autosend) > updateTime_autosend*1e9):
         timeCheck_autosend = time.monotonic_ns() # reset timer
-        sendPayload(nrf, getPayload(), debugPrint=False)
+        curPayload = getPayload()
+        if curPayload is not None:
+            sendPayload(nrf, getPayload(), debugPrint=False)
     

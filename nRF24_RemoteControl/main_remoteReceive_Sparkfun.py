@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: June 13th, 2021
+# Last Modified: June 20th, 2021
 
 # Import modules
 import board, digitalio, struct, time, random # circuitpython built-ins
@@ -47,8 +47,7 @@ print("Finished initializing nRF24 module")
 ### Initialize neopixel output
 ledPin = board.NEOPIXEL
 pixelMain = neopixel.NeoPixel(ledPin, 1, pixel_order=neopixel.GRB)
-pixelMain[0] = (0,0,0) # turn off on startup
-
+pixelMain.fill((0,0,0)) # turn off on startup
 print("Finished initializing neopixel")
 
 # Setup colors and brightness settings
@@ -64,7 +63,7 @@ brightness = 0.1 # from 0 to 1
 
 ### Other things
 # Setup some storage vars
-faceColor = ColorSolid(intensity=0)
+faceMethod = ColorMethod(ModeStationary, ColorOff)
 
 # Configure timers
 timeCheck_receive = time.monotonic_ns()
@@ -91,27 +90,28 @@ while True:
         if payloadContents is not None:
             try: # don't crash if the payload can't be converted correctly
                 # Convert to a color
-                curColor = ColorSolid.parse(payloadContents)
-                if faceColor != curColor:
+                curMethod = ColorMethod.parse(payloadContents)
+                if faceMethod != curMethod:
                     detectedChanges = True
                 
                 # Store the payload as the last valid content received
-                faceColor = curColor
+                faceMethod = curMethod
             except:
                 try:
                     faceIdx = float(payloadContents)
-                    curColor = ColorSolid(hue=((faceIdx-1)*60.0))
-                    if faceColor != curColor:
+                    curMethod = ColorMethod(ModeStationary, ColorSolid(hue=((faceIdx-1)*60.0)))
+                    if faceMethod != curMethod:
                         detectedChanges = True
                     
                     # Store the payload as the last valid content received
-                    faceColor = curColor
+                    faceMethod = curMethod
                 except:
                     pass
 
     ### Update
     if detectedChanges == True:
         # Change color!
+        faceColor = faceMethod.color
         pixelMain.fill(adjColor((faceColor.red, faceColor.green, faceColor.blue),brightness))
     
     
