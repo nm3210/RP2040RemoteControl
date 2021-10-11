@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: June 20th, 2021
+# Last Modified: October 10th, 2021
 
 # Import modules
 import board, digitalio, struct, time, random # circuitpython built-ins
@@ -93,6 +93,7 @@ while True:
                 curMethod = ColorMethod.parse(payloadContents)
                 if faceMethod != curMethod:
                     detectedChanges = True
+                    print('Change Detected!')
                 
                 # Store the payload as the last valid content received
                 faceMethod = curMethod
@@ -102,16 +103,29 @@ while True:
                     curMethod = ColorMethod(ModeStationary, ColorSolid(hue=((faceIdx-1)*60.0)))
                     if faceMethod != curMethod:
                         detectedChanges = True
+                        print('Change Detected!')
                     
                     # Store the payload as the last valid content received
                     faceMethod = curMethod
                 except:
                     pass
 
-    ### Update
-    if detectedChanges == True:
-        # Change color!
+    ### Update Colors (every time loop, to allow for color loops)
+    # Change color!
+    if faceMethod.mode.toString() == "Stationary" and detectedChanges:
+        # Pull out parsed color
         faceColor = faceMethod.color
-        pixelMain.fill(adjColor((faceColor.red, faceColor.green, faceColor.blue),brightness))
+
+        # Check for solid color
+        if type(faceColor) is ColorSolid:
+            pixelMain.fill(adjColor((faceColor.red, faceColor.green, faceColor.blue),brightness))
+
+        # Check for gradients
+        elif type(faceColor) is ColorGradient:
+            pass
+
+    elif faceMethod.mode is "":
+        pass
+
     
     

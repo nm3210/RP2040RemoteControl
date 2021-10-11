@@ -8,7 +8,7 @@
 # 
 # nm3210@gmail.com
 # Date Created:  April 17th, 2021
-# Last Modified: June 20th, 2021
+# Last Modified: October 10th, 2021
 
 # Import modules
 import board, bitbangio, digitalio, struct, time, random # circuitpython built-ins
@@ -83,6 +83,24 @@ updateTime_changes = 0.01 # seconds
 
 timeCheck_autosend = time.monotonic_ns()
 updateTime_autosend = 1.0 # always send an update every once in a while
+
+
+### Set up colors (preallocate)
+# Solid colors
+solidRed     = ColorMethod(ModeStationary, ColorRed)
+solidYellow  = ColorMethod(ModeStationary, ColorYellow)
+solidGreen   = ColorMethod(ModeStationary, ColorGreen)
+solidCyan    = ColorMethod(ModeStationary, ColorCyan)
+solidBlue    = ColorMethod(ModeStationary, ColorBlue)
+solidMagenta = ColorMethod(ModeStationary, ColorMagenta)
+solidWhite   = ColorMethod(ModeStationary, ColorWhite)
+solidOff     = ColorMethod(ModeStationary, ColorOff)
+
+# Gradients
+gradientRainbowShort = ColorGradient([ColorRed, ColorYellow, ColorGreen, ColorCyan, ColorBlue, ColorMagenta, ColorSolid(hue=360)])
+rainbowShort = ColorMethod(ModeStationary, gradientRainbowShort)
+gradientRainbowMedium = ColorGradient([ColorRed, ColorYellow, ColorGreen, ColorCyan, ColorBlue, ColorMagenta, ColorSolid(hue=360)],1)
+rainbowMedium = ColorMethod(ModeStationary, gradientRainbowMedium)
 
 
 ### Private functions
@@ -179,18 +197,18 @@ def anyChanges():
     return False
 
 def lookupFaceMethod(faceVal):
-    if   faceVal == 1:
-        return ColorMethod(ModeStationary, ColorRed)
-    elif faceVal == 2:
-        return ColorMethod(ModeStationary, ColorYellow)
-    elif faceVal == 3:
-        return ColorMethod(ModeStationary, ColorGreen)
-    elif faceVal == 4:
-        return ColorMethod(ModeStationary, ColorCyan)
-    elif faceVal == 5:
-        return ColorMethod(ModeStationary, ColorBlue)
-    elif faceVal == 6:
-        return ColorMethod(ModeStationary, ColorMagenta)
+    if   faceVal == 1: # TOP Die Val = '2'
+        return solidRed
+    elif faceVal == 2: # TOP Die Val = '5'
+        return solidYellow
+    elif faceVal == 3: # TOP Die Val = '4'
+        return solidGreen
+    elif faceVal == 4: # TOP Die Val = '3'
+        return solidCyan
+    elif faceVal == 5: # TOP Die Val = '1'
+        return solidBlue
+    elif faceVal == 6: # TOP Die Val = '6'
+        return solidMagenta
     else:
         return None
 
